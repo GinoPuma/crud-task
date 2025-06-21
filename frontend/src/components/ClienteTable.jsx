@@ -1,6 +1,6 @@
 export default function ClienteTable({ clientes, onDelete, onEdit }) {
   return (
-    <table border="1" cellPadding="5">
+    <table className="cliente-table">
       <thead>
         <tr>
           <th>NRO. ORDEN</th>
@@ -20,9 +20,7 @@ export default function ClienteTable({ clientes, onDelete, onEdit }) {
             <td>{cli.celular}</td>
             <td>
               <button onClick={() => onDelete(cli.id)}>Eliminar</button>
-              <button onClick={() => onEdit(cli)} style={{ marginLeft: "5px" }}>
-                Editar
-              </button>
+              <button onClick={() => onEdit(cli)}>Editar</button>
             </td>
           </tr>
         ))}

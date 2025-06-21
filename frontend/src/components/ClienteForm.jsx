@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 
 export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
   const [form, setForm] = useState({
@@ -22,7 +22,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
         celular: "",
       });
     }
-    setFormErrors({}); 
+    setFormErrors({});
   }, [currentClient]);
 
   const validateForm = (formData) => {
@@ -40,12 +40,16 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
       newErrors.nombre = "El Nombre es obligatorio.";
     }
 
-    if (formData.celular.trim()) {
-      if (!/^\d+$/.test(formData.celular)) {
-        newErrors.celular = "El Celular solo debe contener números.";
-      } else if (formData.celular.length !== 9) {
-        newErrors.celular = "El Celular debe tener 9 dígitos.";
-      }
+    if (!formData.empresa.trim()) {
+      newErrors.empresa = "La Empresa es obligatoria.";
+    }
+
+    if (!formData.celular.trim()) {
+      newErrors.celular = "El Celular es obligatorio.";
+    } else if (!/^\d+$/.test(formData.celular)) {
+      newErrors.celular = "El Celular solo debe contener números.";
+    } else if (formData.celular.length !== 9) {
+      newErrors.celular = "El Celular debe tener 9 dígitos.";
     }
 
     return newErrors;
@@ -69,6 +73,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
     const currentErrors = validateForm({
       dni: dniValue,
       nombre: form.nombre,
+      empresa: form.empresa,
       celular: form.celular,
     });
 
@@ -124,6 +129,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
     const currentErrors = validateForm({
       dni: form.dni,
       nombre: form.nombre,
+      empresa: form.empresa,
       celular: celularValue,
     });
 
@@ -148,7 +154,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
     setFormErrors(validationResults);
 
     if (Object.keys(validationResults).length > 0) {
-      return; 
+      return;
     }
 
     const response = await onSubmit(form);
@@ -166,14 +172,18 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
           empresa: "",
           celular: "",
         });
-        setFormErrors({}); 
+        setFormErrors({});
       }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: "2rem" }}>
-      <div style={{ marginBottom: "1rem" }}>
+    <form
+      onSubmit={handleSubmit}
+      className="cliente-form"
+      style={{ marginBottom: "2rem" }}
+    >
+      <div className="form-group">
         <input
           name="dni"
           value={form.dni}
@@ -191,7 +201,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
         )}
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="form-group">
         <input
           name="nombre"
           value={form.nombre}
@@ -208,17 +218,25 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
         )}
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="form-group">
         <input
           name="empresa"
           value={form.empresa}
           onChange={handleChange}
           placeholder="Empresa"
           disabled={loadingDni}
+          required
+          style={{ borderColor: formErrors.empresa ? "red" : "" }}
         />
+
+        {formErrors.empresa && (
+          <p style={{ color: "red", fontSize: "0.8rem", marginTop: "0.2rem" }}>
+            {formErrors.empresa}
+          </p>
+        )}
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="form-group">
         <input
           name="celular"
           value={form.celular}
@@ -227,6 +245,7 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
           placeholder="Celular"
           disabled={loadingDni}
           style={{ borderColor: formErrors.celular ? "red" : "" }}
+          required
         />
         {formErrors.celular && (
           <p style={{ color: "red", fontSize: "0.8rem", marginTop: "0.2rem" }}>
@@ -235,19 +254,21 @@ export default function ClienteForm({ onSubmit, currentClient, onCancelEdit }) {
         )}
       </div>
 
-      <button type="submit" disabled={loadingDni}>
-        {currentClient ? "Actualizar" : "Guardar"}
-      </button>
-      {currentClient && (
-        <button
-          type="button"
-          onClick={onCancelEdit}
-          style={{ marginLeft: "10px" }}
-        >
-          Cancelar Edición
+      <div className="form-buttons">
+        <button type="submit" disabled={loadingDni}>
+          {currentClient ? "Actualizar" : "Guardar"}
         </button>
-      )}
-      {loadingDni && <p style={{ marginTop: "1rem" }}>Buscando nombre...</p>}
+        {currentClient && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            style={{ marginLeft: "10px" }}
+          >
+            Cancelar Edición
+          </button>
+        )}
+      </div>
+      {loadingDni && <p>Buscando nombre...</p>}
     </form>
   );
 }

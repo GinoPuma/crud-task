@@ -1,7 +1,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import ClienteForm from "./components/ClienteForm";
 import ClienteTable from "./components/ClienteTable";
+import "./index.css";
 
 const GlobalMessage = ({ message, type, onClose }) => {
   if (!message) return null;
@@ -65,8 +67,8 @@ function App() {
   };
 
   const handleFormSubmit = async (clienteData) => {
-    let success = false; 
-    let responseToForm = null; 
+    let success = false;
+    let responseToForm = null;
 
     try {
       if (clienteActual) {
@@ -103,35 +105,46 @@ function App() {
         error.response.status === 409 &&
         errorField === "dni"
       ) {
-        responseToForm = { fieldErrors: { dni: errorMessage } }; 
+        responseToForm = { fieldErrors: { dni: errorMessage } };
       } else {
         setGlobalMessage({ type: "error", text: errorMessage });
       }
     } finally {
       if (success && !responseToForm) {
-        setClienteActual(null); 
+        setClienteActual(null);
       }
       obtenerClientes();
     }
 
-    return responseToForm; 
+    return responseToForm;
   };
 
   const eliminarCliente = async (id) => {
-    try {
-      if (window.confirm("¿Está seguro de que desea eliminar este cliente?")) {
+    const resultado = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará al cliente de forma permanente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (resultado.isConfirmed) {
+      try {
         await axios.delete(`http://localhost:5000/api/clientes/${id}`);
         setGlobalMessage({
           type: "success",
           text: "Cliente eliminado con éxito.",
         });
         obtenerClientes();
+      } catch (error) {
+        console.error("Error al eliminar cliente:", error);
+        const errorMessage =
+          error.response?.data?.error || "Error al eliminar el cliente.";
+        setGlobalMessage({ type: "error", text: errorMessage });
       }
-    } catch (error) {
-      console.error("Error al eliminar cliente:", error);
-      const errorMessage =
-        error.response?.data?.error || "Error al eliminar el cliente.";
-      setGlobalMessage({ type: "error", text: errorMessage });
     }
   };
 
